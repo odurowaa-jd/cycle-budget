@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Household {
+  id             String          @id @default(cuid())
+  name           String
+  currency       String          @default("GHS")
+  monthlyBudgets MonthlyBudget[]
+  users          User[]
+}
+
+model MonthlyBudget {
+  id          String   @id @default(cuid())
+  monthName   String   
+  year        Int      
+  totalLimit  Float    @default(2000)
+  createdAt   DateTime @default(now())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id])
+  cycles      Cycle[]  
+}
+
+model Cycle {
+  id              String         @id @default(cuid())
+  cycleNumber     Int            
+  limitAmount     Float          @default(500)
+  rolloverAmount  Float          @default(0)    // Surplus from previous week
+  isClosed        Boolean        @default(false)
+  startDate       DateTime
+  createdAt       DateTime       @default(now())
+  monthlyBudgetId String
+  monthlyBudget   MonthlyBudget  @relation(fields: [monthlyBudgetId], references: [id])
+  transactions    Transaction[]
+}
+
+model Transaction {
+  id             String          @id @default(cuid())
+  itemName       String
+  amountTaken    Float
+  amountReturned Float           @default(0)
+  actualSpent    Float    
+  category       String          @default("General")
+  type           TransactionType @default(EXPENSE)
+  createdAt      DateTime        @default(now())
+  cycleId        String
+  cycle          Cycle           @relation(fields: [cycleId], references: [id])
+}
+
+model User {
+  id          String    @id @default(cuid())
+  clerkId     String    @unique
+  email       String    @unique
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id])
+}
