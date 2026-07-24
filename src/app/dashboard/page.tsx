@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import DashboardUI from "@/components/DashboardUI";
-import { startNewMonth } from "./actions";
+import { startNewMonth } from "../actions";
 
 export default async function Dashboard() {
   const { userId } = await auth();
