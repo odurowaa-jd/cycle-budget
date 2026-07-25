@@ -15,15 +15,29 @@ export default async function Dashboard() {
   });
 
   if (!dbUser) {
-    const household = await prisma.household.create({ data: { name: `${user?.firstName}'s Home` } });
-    dbUser = await prisma.user.create({
-      data: { clerkId: userId, email: user?.emailAddresses[0].emailAddress || "", householdId: household.id },
-      include: { household: true }
-    });
+    const email = user?.emailAddresses[0].emailAddress || "";
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (existingUser) {
+      await prisma.user.update({
+        where: { email },
+        data: { clerkId: userId },
+      });
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        include: { household: true }
+      });
+    } else {
+      const household = await prisma.household.create({ data: { name: `${user?.firstName}'s Home` } });
+      dbUser = await prisma.user.create({
+        data: { clerkId: userId, email, householdId: household.id },
+        include: { household: true }
+      });
+    }
   }
 
   const month = await prisma.monthlyBudget.findFirst({
-    where: { householdId: dbUser.householdId },
+    where: { householdId: dbUser!.householdId },
     orderBy: { createdAt: "desc" },
     include: { cycles: { include: { transactions: true }, orderBy: { cycleNumber: "asc" } } }
   });
@@ -54,6 +68,6 @@ export default async function Dashboard() {
   const wRemaining = activeCycle.limitAmount - wSpent;
 
   return (
-    <DashboardUI activeCycle={activeCycle} month={month} vaultReserve={vaultReserve} totalPool={totalPool} wRemaining={wRemaining} cur={dbUser.household.currency} />
+    <DashboardUI activeCycle={activeCycle} month={month} vaultReserve={vaultReserve} totalPool={totalPool} wRemaining={wRemaining} cur={dbUser!.household.currency} />
   );
 }
