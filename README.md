@@ -26,7 +26,7 @@ Since implementing this system:
 *   **Transparency:** Shifted from physical ledger books to a cloud-synced dashboard accessible by both the provider and the spender.
 *   **Empowerment:** My non-tech-savvy mother can now record transactions in seconds using a high-fidelity mobile interface.
 
-## 🛠️ Technical Stack
+## Technical Stack
 *   **Frontend:** Next.js (App Router), Tailwind CSS, Lucide Icons.
 *   **Backend:** Prisma ORM, PostgreSQL (Supabase).
 *   **Authentication:** Clerk (Multi-tenant secure sessions).
